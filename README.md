@@ -131,6 +131,7 @@ This technique is very similar to creation of custom paths described in previous
 
 The following example create a simple arrow shape:
 ```JavaScript
+var doc = context.document;
 var path = NSBezierPath.bezierPath();
 path.moveToPoint(NSMakePoint(10,10));
 path.lineToPoint(NSMakePoint(100,10));
@@ -165,6 +166,8 @@ To make Sketch recognize the provided path as a line shape, you have to add only
 
 The following example creates a simple line shape with two points:
 ```JavaScript
+var doc = context.document;
+
 var path = NSBezierPath.bezierPath();
 path.moveToPoint(NSMakePoint(10,10));
 path.lineToPoint(NSMakePoint(200,200));
@@ -181,6 +184,8 @@ The same way, you can easily create a multi segment line using methods provided 
 
 The following example demonstrates how to create a curved path with four points:
 ```JavaScript
+var doc = context.document;
+
 var path = NSBezierPath.bezierPath();
 path.moveToPoint(NSMakePoint(84.5,161));
 [path curveToPoint:NSMakePoint(166,79.5) controlPoint1:NSMakePoint(129.5,161) controlPoint2:NSMakePoint(166,124.5)];
@@ -212,6 +217,7 @@ In order to set custom radiuses you use `-MSRectangleShape.setCornerRadiusFromCo
 
 The following sample sets left-top and right-top corners of a selected rect shape to 15 points:
 ```JavaScript
+var selection = context.selection;
 var layer = selection.firstObject();
 if(layer && layer.isKindOfClass(MSShapeGroup)) {
     var shape=layer.layers().firstObject();
@@ -240,6 +246,7 @@ This method produces the same result as a standard [Scale](http://bohemiancoding
 
 The following sample demonstrates how to scale first selected layer:
 ```JavaScript
+var selection = context.selection;
 var layer = selection.firstObject();
 if(layer) {
     // Preserve layer center point.
@@ -260,24 +267,23 @@ Works in:
 
 ## Finding Bounds For a Set of Layers
 
-If you want to quickly find a bounding rectangle for selected layers or any set of layers, there is a very handy class method for that `+(GKRect*)MSLayerGroup.groupBoundsForLayers:(NSArray*)layers`. It accepts a list of layers and returns an instance of [GKRect](https://github.com/BohemianCoding/GeometryKit/blob/c738cdec6196230eada5925ebc19fe42bc1205f5/Source/GKRect.h) class which is the part of open source [GeometryKit](https://github.com/BohemianCoding/GeometryKit) by Bohemian Coding that is widely used in Sketch App.
+If you want to quickly find a bounding rectangle for selected layers or any set of layers, there is a very handy class method for that `+(CGRect)MSLayerGroup.groupBoundsForLayers:(NSArray*)layers`. It accepts a list of layers and returns CGRect structure.
 
 ![Scaling Layers](./docs/find_selection_bounds.png)
 
 A quick sample that demonstrate how to use it:
 ```JavaScript
+var selection = context.selection;
 var bounds=MSLayerGroup.groupBoundsForLayers(selection);
 
-print("x: "+bounds.x());
-print("y: "+bounds.y());
-print("width: "+bounds.width());
-print("height: "+bounds.height());
-print("mixX: "+bounds.midX());
-print("mixX: "+bounds.midY());
+print("x: "+bounds.origin.x);
+print("y: "+bounds.origin.y);
+print("width: "+bounds.size.width);
+print("height: "+bounds.size.height);
 ```
 
 Works in:
-- Sketch 3.1 +
+- Sketch 3.3 +
 
 ## Create Oval Shape
 
@@ -287,10 +293,11 @@ In order to create an oval shape programmatically, you have to create an instanc
 
 The following sample demonstrates how to do it:
 ```JavaScript
+var doc = context.document;
 var ovalShape = MSOvalShape.alloc().init();
 ovalShape.frame = MSRect.rectWithRect(NSMakeRect(0,0,100,100));
 
-var shapeGroup=ovalShape.embedInShapeGroup();
+var shapeGroup=MSShapeGroup.shapeWithPath(ovalShape);
 var fill = shapeGroup.style().fills().addNewStylePart();
 fill.color = MSColor.colorWithSVGString("#dd2020");
 
@@ -313,6 +320,8 @@ You can create a shared style from the existing style that is bound to some laye
 
 Create shared style from selected layers' style:
 ```JavaScript
+var selection = context.selection;
+var doc = context.document;
 var layer=selection.firstObject();
 if(layer) {
     var sharedStyles=doc.documentData().layerStyles();
@@ -322,6 +331,7 @@ if(layer) {
 
 Create shared style from scratch:
 ```JavaScript
+var doc = context.document;
 var sharedStyles=doc.documentData().layerStyles();
 
 var style=MSStyle.alloc().init();
@@ -369,6 +379,7 @@ If you want to flatten a complex vector layer that contains several sub paths co
 
 This sample code flattens a first selected vector layer:
 ```JavaScript
+var selection = context.selection;
 var layer=selection.firstObject();
 if(layer && layer.isKindOfClass(MSShapeGroup)) {
     layer.flatten();
@@ -382,6 +393,8 @@ Works in:
 - Sketch 3.2 +
 
 ## Flatten Layers to Bitmap
+
+### Note: This example currently doesn't work in Sketch 3.3 
 
 In order to flatten one or several layers of any type to a single `MSBitmapLayer`, use `-MSLayerFlattener.flattenLayers:` method. It accepts one arguments which is an array of layers to be flattened.
 
@@ -429,6 +442,7 @@ function convertToOutlines(layer) {
     return shape;
 }
 
+var selection = context.selection;
 var layer=selection.firstObject();
 if(layer) {
     var vectorizedTextLayer=convertToOutlines(layer);
@@ -451,6 +465,7 @@ This method accepts a `double` value that represents a position on path at which
 
 The following example divides shape path into 15 segments and prints out their points coordinates:
 ```JavaScript
+var selection = context.selection;
 var layer=selection.firstObject();
 if(layer && layer.isKindOfClass(MSShapeGroup)) {
 
